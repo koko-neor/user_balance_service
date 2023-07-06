@@ -2,6 +2,7 @@
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
+$container = require __DIR__ . '/di.php';
 
 $config = [
     'id' => 'basic',
@@ -46,6 +47,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                'api/balance/<userId:\d+>/<currency:\w+>' => 'balance/index',
                 'api/balance/<userId:\d+>' => 'balance/index',
                 'api/balance/increase' => 'balance/increase',
                 'api/balance/decrease' => 'balance/decrease',
@@ -54,6 +56,7 @@ $config = [
         ],
     ],
     'params' => $params,
+    'container' => $container
 ];
 
 if (YII_ENV_DEV) {

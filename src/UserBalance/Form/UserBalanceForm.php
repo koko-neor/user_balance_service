@@ -10,8 +10,8 @@ use yii\base\Model;
  */
 class UserBalanceForm extends Model
 {
-    public int $userId;
-    public float $balance;
+    public string $userId;
+    public string $balance;
     public string $created_at;
     public string $updated_at;
 
@@ -35,8 +35,16 @@ class UserBalanceForm extends Model
     {
         return [
             [['userId', 'balance'], 'required'],
-            ['userId', 'exist', 'targetClass' => User::class, 'targetAttribute' => 'id'],
-            ['balance', 'number'],
+            [
+                'userId', 'exist',
+                'targetClass' => User::class, 'targetAttribute' => 'id',
+                'message' => 'Пользователь не найден.'
+            ],
+            [
+                'balance', 'number',
+                'numberPattern' => '/^\d{1,15}(\.\d{1,4})?$/',
+                'message' => 'Баланс должен быть числом с максимум 15 цифрами и 4 знаками после запятой.'
+            ],
         ];
     }
 }

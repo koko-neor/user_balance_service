@@ -2,6 +2,7 @@
 
 namespace app\src\UserBalance;
 
+use app\src\Currency\CurrencyService;
 use app\src\UserBalance\Dto\ResultDto;
 use app\src\UserBalance\Dto\UserBalanceTransferDto;
 use app\src\UserBalance\Dto\UserBalanceDto;
@@ -10,10 +11,12 @@ use app\src\UserBalance\Repository\UserBalanceRepository;
 class UserBalanceService
 {
     private UserBalanceRepository $balanceRepository;
+    private CurrencyService $currencyService;
 
-    public function __construct(UserBalanceRepository $balanceRepository)
+    public function __construct(UserBalanceRepository $balanceRepository, CurrencyService $currencyService)
     {
         $this->balanceRepository = $balanceRepository;
+        $this->currencyService = $currencyService;
     }
 
     public function handleIncreaseBalance(UserBalanceDto $dto): ResultDto
@@ -85,12 +88,26 @@ class UserBalanceService
         }
     }
 
-    public function getBalance(int $userId): ResultDto
+    public function getBalance(int $userId, ?string $currency = null): ResultDto
     {
         $balance = $this->balanceRepository->get($userId);
 
         if ($balance === null) {
             return new ResultDto('User balance not found', 404);
+        }
+
+        if ($currency === null) {
+            return new ResultDto('Current user balance: ' . $balance->balance, 200);
+        }
+
+        if ($currency !== 'KZT') {
+            $currentRate = $this->currencyService->getExchangeRate('KZT', $currency);
+
+            if ($currentRate === null) {
+                return new ResultDto('Invalid currency for calculation', 400);
+            }
+
+            $balance->balance = bcmul($balance->balance, $currentRate, 4);
         }
 
         return new ResultDto('Current user balance: ' . $balance->balance, 200);
